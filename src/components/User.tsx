@@ -7,7 +7,7 @@ interface IProps {
   index: number;
   handleUserAction: (
     action: UserAction,
-    index: number | null,
+    index?: number,
     value?: IUser | null
   ) => void;
 }

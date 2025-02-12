@@ -1,66 +1,57 @@
 // rafce - react arrow function component export
 
-import axios from "axios";
-import { FC, useEffect, useRef, useState } from "react"
+import { FC, useRef } from "react";
 import User from "./User";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../redux/store";
+import { addUser, deleteUser, editUser } from "../redux/userSlice";
 
 export interface IUser {
-    name: string,
-    phone: string
+  name: string;
+  phone: string;
 }
 
-export type UserAction = 'add' | 'edit' | 'delete';
+export type UserAction = "add" | "edit" | "delete";
 
 const UserList: FC = () => {
-    const [users, setUsers] = useState<IUser[]>([]);
+  // const [users, setUsers] = useState<IUser[]>([]);
+  const { users, status } = useSelector((state: RootState) => state.person);
+  const dispatch: AppDispatch = useDispatch();
 
-    const newUserNameRef = useRef<HTMLInputElement>(null);
-    const newUserPhoneRef = useRef<HTMLInputElement>(null);
+  const newUserNameRef = useRef<HTMLInputElement>(null);
+  const newUserPhoneRef = useRef<HTMLInputElement>(null);
 
-    const handleUserAction = (action: UserAction, index: number | null = null, value: IUser | null = null) => {
-      const usersCopy = [...users];
-    
-      switch (action) {
-        case "add":
-          usersCopy.push({
+  const handleUserAction = (
+    action: UserAction,
+    index?: number,
+    value: IUser | null = null
+  ) => {
+    switch (action) {
+      case "add":
+        dispatch(
+          addUser({
             name: newUserNameRef.current!.value,
-            phone: newUserPhoneRef.current!.value
-          });
-          newUserNameRef.current!.value = newUserPhoneRef.current!.value = "";
-          break;
-        case "edit":
-          usersCopy[index!].name = value!.name;
-          usersCopy[index!].phone = value!.phone;
-          break;
-        case "delete":
-          usersCopy.splice(index!, 1);
-          break;
-      }
-    
-      setUsers(usersCopy);
-    };
-
-      useEffect(() => {
-
-        const fetchUsers = async () => {
-          try {
-            const data: IUser[] = (
-              // await axios.get<ITask[]>("https://jsonplaceholder.typicode.com/todos")
-              await axios.get("https://jsonplaceholder.typicode.com/users")
-            ).data;
-            setUsers(
-              data.map(e => ({
-                name: e.name,
-                phone: e.phone
-              }))
-            );
-          } catch (error) {
-            console.log(error);
-          }
-        };
-    
-        fetchUsers();
-      }, []);
+            phone: newUserPhoneRef.current!.value,
+          })
+        );
+        newUserNameRef.current!.value = newUserPhoneRef.current!.value = "";
+        break;
+      case "edit":
+        dispatch(
+          editUser({
+            index,
+            user: {
+              name: value!.name,
+              phone: value!.phone,
+            },
+          })
+        );
+        break;
+      case "delete":
+        dispatch(deleteUser(index));
+        break;
+    }
+  };
 
   return (
     <div className="container mt-4">
@@ -86,19 +77,26 @@ const UserList: FC = () => {
           Add User
         </button>
       </div>
-      <div>
-        {users.map(({ name, phone }, i) => (
-          <User
-            key={Math.random() + new Date().getTime()}
-            name={name}
-            phone={phone}
-            index={i}
-            handleUserAction={handleUserAction}
-          />
-        ))}
-      </div>
+      {status === "loading" && (
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      )}
+      {status === "success" && (
+        <div>
+          {users.map(({ name, phone }, i) => (
+            <User
+              key={Math.random() + new Date().getTime()}
+              name={name}
+              phone={phone}
+              index={i}
+              handleUserAction={handleUserAction}
+            />
+          ))}
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default UserList
+export default UserList;
