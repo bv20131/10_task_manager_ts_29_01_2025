@@ -6,7 +6,7 @@ interface IProps {
   email: string,
   body: string,
   index: number,
-  handleCommentAction: (action: CommentAction, index: number | null, value?: IComment | null ) => void
+   handleCommentAction: (action: CommentAction, index?: number , value?: IComment | null ) => void
 }
 
 const Comment: FC<IProps> = ({ name, email, body, index, handleCommentAction}) => {

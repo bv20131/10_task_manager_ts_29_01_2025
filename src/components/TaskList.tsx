@@ -1,8 +1,8 @@
-import { FC, useEffect, useRef } from "react";
+import { FC,  useRef } from "react";
 import Task from "./Task";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../redux/store";
-import { addTask, deleteTask, editTask, fetchTodos, toggleTask } from "../redux/taskSlice";
+import { addTask, deleteTask, editTask,  toggleTask } from "../redux/taskSlice";
 
 export type TaskAction = 'add' | 'edit' | 'delete' | 'toggle';
 
@@ -35,10 +35,7 @@ const TasksList: FC = () => {
     }
   };
 
-  useEffect(() => {
-    dispatch(fetchTodos())
-  }, [dispatch]);
-
+  
   return (
     <div className="container mt-4">
       <h1 className="mb-4 text-center">Task Manager App</h1>

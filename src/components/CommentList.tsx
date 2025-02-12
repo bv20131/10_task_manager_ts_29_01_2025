@@ -1,7 +1,13 @@
-import axios from "axios";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useRef } from "react";
 import Comment from "./Comment";
-import { v4 as createId } from 'uuid';
+import { v4 as createId } from "uuid";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../redux/store";
+import {
+  addComment,
+  deleteComment,
+  editComment,
+} from "../redux/commentSlice";
 
 export interface IComment {
   name: string;
@@ -9,10 +15,14 @@ export interface IComment {
   body: string;
 }
 
-export type CommentAction = 'add' | 'edit' | 'delete';
+export type CommentAction = "add" | "edit" | "delete";
 
 const CommentList: FC = () => {
-  const [comments, setComments] = useState<IComment[]>([]);
+  // const [comments, setComments] = useState<IComment[]>([]);
+  const { comments, status } = useSelector(
+    (state: RootState) => state.messages
+  );
+  const dispatch: AppDispatch = useDispatch();
 
   const newCommentNameRef = useRef<HTMLInputElement>(null);
   const newCommentEmailRef = useRef<HTMLInputElement>(null);
@@ -20,55 +30,40 @@ const CommentList: FC = () => {
 
   const handleCommentAction = (
     action: CommentAction,
-    index: number | null = null,
+    index?: number,
     value: IComment | null = null
   ) => {
-    const commentsCopy = [...comments];
-
     switch (action) {
       case "add":
-        commentsCopy.push({
-          name: newCommentNameRef.current!.value,
-          email: newCommentEmailRef.current!.value,
-          body: newCommentBodyRef.current!.value
-        });
-        newCommentNameRef.current!.value = newCommentEmailRef.current!.value = newCommentBodyRef.current!.value = "";
+        dispatch(
+          addComment({
+            name: newCommentNameRef.current!.value,
+            email: newCommentEmailRef.current!.value,
+            body: newCommentBodyRef.current!.value,
+          })
+        );
+        newCommentNameRef.current!.value =
+          newCommentEmailRef.current!.value =
+          newCommentBodyRef.current!.value =
+            "";
         break;
       case "edit":
-        commentsCopy[index!].name = value!.name;
-        commentsCopy[index!].email = value!.email;
-        commentsCopy[index!].body = value!.body;
+        dispatch(
+          editComment({
+            index,
+            comment: {
+              name: value!.name,
+              email: value!.email,
+              body: value!.body,
+            },
+          })
+        );
         break;
       case "delete":
-        commentsCopy.splice(index!, 1);
+        dispatch(deleteComment(index!));
         break;
     }
-
-    setComments(commentsCopy);
   };
-
-  useEffect(() => {
-
-    const fetchComments = async () => {
-      try {
-        const data: IComment[] = (
-          // await axios.get<ITask[]>("https://jsonplaceholder.typicode.com/todos")
-          await axios.get("https://jsonplaceholder.typicode.com/comments")
-        ).data;
-        setComments(
-          data.map(e => ({
-            name: e.name,
-            email: e.email,
-            body: e.body
-          }))
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchComments();
-  }, []);
 
   return (
     <div className="container mt-4">
@@ -101,7 +96,12 @@ const CommentList: FC = () => {
         </button>
       </div>
       <div>
-        {comments.map(({ name, email, body }, i) => (
+        {status === "loading" && (
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        )}
+        {status === "success" && comments.map(({ name, email, body }, i) => (
           <Comment
             key={createId()}
             name={name}
