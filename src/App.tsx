@@ -12,7 +12,7 @@ function App() {
       < Route path='/' element={<Layout />}>
         <Route index element={<TasksList />} />
         <Route path='/users' element={<UserList />} />
-        <Route path='/users' element={<CommentList />} />
+        <Route path='/comments' element={<CommentList />} />
         </Route>
       </Routes>
   )
