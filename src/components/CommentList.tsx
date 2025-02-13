@@ -92,7 +92,7 @@ const CommentList: FC = () => {
           className="btn btn-primary"
           onClick={() => handleCommentAction("add")}
         >
-          Add User
+          Add Comment
         </button>
       </div>
       <div>
